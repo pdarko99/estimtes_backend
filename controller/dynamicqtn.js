@@ -39,12 +39,16 @@ function createOptions(allQtns, options, final_questions, opt) {
   sub_qtn.options = sub_option;
   sub_qtn.sub = true;
   sub_qtn.main = false;
-  final_questions.push(sub_qtn);
-  sub_option.forEach((opt) => {
-    if (opt.next_qtn) {
-      createOptions(allQtns, options, final_questions, opt);
-    }
-  });
+  let last_qtn = final_questions[final_questions.length - 1]
+  if (sub_qtn.id !== last_qtn.id) {
+      final_questions.push(sub_qtn);
+      sub_option.forEach((opt) => {
+        if (opt.next_qtn) {
+          createOptions(allQtns, options, final_questions, opt);
+        }
+      });
+  }
+
 }
 async function createQtns(req, res, next) {
   let data = { ...req.body };

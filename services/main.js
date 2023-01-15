@@ -261,6 +261,7 @@ async function storeUserInput(data) {
   
   `;
 
+  /*
   let objMailchimpParamsToDoctor = {
     templateName: "estimate",
     fromEmail: "order@estimatesback.azguards.com",
@@ -302,31 +303,33 @@ async function storeUserInput(data) {
   }
   await transporter.sendEmailFromMandrill(objMailchimpParamsToDoctor);
 
-  // const mailOptions = {
-  //   from: "prince@azguards.com",
-  //   to: userInfo.email,
-  //   subject: "Your azguards total expenses",
-  //   html: html_template,
-  //   attachments: [
-  //     {
-  //       filename: "azguards_price.pdf",
-  //       content: buffer,
-  //       contentType: "application/pdf",
-  //     },
-  //     {
-  //       path: "./portfolio.pdf",
-  //     },
-  //   ],
-  // };
+  */
 
-  // transporter.transport.sendMail(mailOptions, (error, info) => {
-  //   if (error) {
-  //     throw error;
-  //   } else {
-  //     let res = `Email sent: ${info.response}`;
-  //     return res;
-  //   }
-  // });
+  const mailOptions = {
+    from: "prince@azguards.com",
+    to: userInfo.email,
+    subject: "Your azguards total expenses",
+    html: html_template,
+    attachments: [
+      {
+        filename: "azguards_price.pdf",
+        content: buffer,
+        contentType: "application/pdf",
+      },
+      {
+        path: "./portfolio.pdf",
+      },
+    ],
+  };
+
+  transporter.transport.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      throw error;
+    } else {
+      let res = `Email sent: ${info.response}`;
+      return res;
+    }
+  });
 }
 
 module.exports = {
