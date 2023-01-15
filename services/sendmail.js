@@ -1,16 +1,15 @@
 const nodemailer = require("nodemailer");
 const pool = require("./db").pool;
-
 const puppeteer = require("puppeteer");
 const dotenv = require("dotenv");
 dotenv.config();
 
 
-/*
+
 const mailchimpTx = require("@mailchimp/mailchimp_transactional")(process.env.MANDRILL_API_KEY);
 
 
-sendEmailFromMandrill = async (objParams) => {
+const sendEmailFromMandrill = async (objParams) => {
   try {
     const {
       templateName,
@@ -47,46 +46,50 @@ sendEmailFromMandrill = async (objParams) => {
 };
 
 
-  let objMailchimpParamsToDoctor = {
-    templateName: "estimate",
-    fromEmail: "order@estimatesback.azguards.com",
-    subject: "Your azguards total expenses",
-    textContent: "lol",
-    arrToEmail: [
-      {
-        email: "padarko99@gmail.com",
-        type: "to",
-      },
-    ],
-    arrTemplateVars: [
-      {
-        name: "accessUrl",
-        content: `gfsdfg`,
-      },
-    ],
-    arrAttachments: [
-     
-      {
-        path: "./portfolio.pdf",
-      },
-    ],
-  };
-  if (typeof file !== "undefined" && Object.keys(file).length > 0) {
-    const data = fs.readFileSync(file.path);
-    let base64Data = Buffer.from(data).toString("base64");
-    objMailchimpParamsToDoctor.arrAttachments = [
-      {
-        type: `${file.mimetype}`,
-        name: `${file.filename}`,
-        content: base64Data,
-      },
-    ];
-  }
+//   let objMailchimpParamsToDoctor = {
+//     templateName: "estimate",
+//     fromEmail: "order@estimatesback.azguards.com",
+//     subject: "Your azguards total expenses",
+//     textContent: "Your azguards total expenses",
+//     arrToEmail: [
+//       {
+//         email: "padarko99@gmail.com",
+//         type: "to",
+//       },
+//     ],
+//     arrTemplateVars: [
+//       {
+//         name: "UserName",
+//         content: `Prince`,
+//       },
+//       {
+//         name: "serviceName",
+//         content: `Service1`,
+//       },
+//       {
+//         name: "currency",
+//         content: `$`,
+//       },
+//       {
+//         name: "totalCost",
+//         content: `40`,
+//       },
+//     ],
+//     arrAttachments: [],
+//   };
+//     const data = fs.readFileSync("./Untitled.pdf");
+//     let base64Data = Buffer.from(data).toString("base64");
+//     objMailchimpParamsToDoctor.arrAttachments = [
+//       {
+//         type: `application/pdf`,
+//         name: `Portfolio.pdf`,
+//         content: base64Data,
+//       },
+//     ];
 
 
- sendEmailFromMandrill(objMailchimpParamsToDoctor);
+//  sendEmailFromMandrill(objMailchimpParamsToDoctor);
 
- */
 
 
 
@@ -132,4 +135,4 @@ async function generatePDF(html) {
 }
 
 // module.exports = { sendEmailFromMandrill, generatePDF };
-module.exports = { transport, generatePDF, };
+module.exports = { sendEmailFromMandrill, generatePDF };

@@ -1,6 +1,7 @@
 const pool = require("./db").pool;
 const helper = require("./helper");
 const transporter = require("./sendmail");
+const fs = require("fs");
 
 async function getAllUsers() {
   const conn = await pool.connect();
@@ -237,36 +238,11 @@ async function storeUserInput(data) {
   conn.release();
   let first_name = userInfo.name.split(" ")[0];
 
-  let html_template = `
-  <div>
-  Hi ${first_name},
-  </div>
-  <p>
-  Thanks for showing interest in our services. We have recieved your request for 
-  ${data.service_name}
-  </p>
-    <p>
-    Based on your selected options the approximate cost of the project will be around
-    ${currency} ${totat_cost}
-  </p>
-    <p>
-    if you confirm your booking at our stall, you can avail 20% discount.
-  </p>
-   <div>
-     
-   <span>Regards</span></br>
-   <span>Team Azguards</span>
-    
-   </div>
-  
-  `;
-
-  /*
-  let objMailchimpParamsToDoctor = {
+  let objMailchimpParams = {
     templateName: "estimate",
     fromEmail: "order@estimatesback.azguards.com",
     subject: "Your azguards total expenses",
-    textContent: html_template,
+    textContent: "Your azguards total expenses",
     arrToEmail: [
       {
         email: userInfo.email,
@@ -275,61 +251,135 @@ async function storeUserInput(data) {
     ],
     arrTemplateVars: [
       {
-        name: "accessUrl",
-        content: `${ACCESS_URL}`,
+        name: "UserName",
+        content: first_name,
+      },
+      {
+        name: "serviceName",
+        content: data.service_name,
+      },
+      {
+        name: "currency",
+        content: currency,
+      },
+      {
+        name: "totalCost",
+        content: totat_cost,
       },
     ],
-    arrAttachments: [
-          {
-            filename: "azguards_price.pdf",
-            content: buffer,
-            contentType: "application/pdf",
-          },
-          {
-            path: "./portfolio.pdf",
-          },
-    ],
+    arrAttachments: [],
   };
-  if (typeof file !== "undefined" && Object.keys(file).length > 0) {
-    const data = fs.readFileSync(file.path);
-    let base64Data = Buffer.from(data).toString("base64");
-    objMailchimpParamsToDoctor.arrAttachments = [
-      {
-        type: `${file.mimetype}`,
-        name: `${file.filename}`,
-        content: base64Data,
-      },
-    ];
-  }
-  await transporter.sendEmailFromMandrill(objMailchimpParamsToDoctor);
+  const emaildata = fs.readFileSync("./Untitled.pdf");
+  let base64DataPortfolio = Buffer.from(emaildata).toString("base64");
+  let base64DataEstimate = Buffer.from(buffer).toString("base64");
+  objMailchimpParams.arrAttachments = [
+    {
+      type: `application/pdf`,
+      name: `Portfolio.pdf`,
+      content: base64DataPortfolio,
+    },
+    {
+      type: `application/pdf`,
+      name: `Estimate.pdf`,
+      content: base64DataEstimate,
+    },
+  ];
 
-  */
+  await transporter.sendEmailFromMandrill(objMailchimpParams);
 
-  const mailOptions = {
-    from: "prince@azguards.com",
-    to: userInfo.email,
-    subject: "Your azguards total expenses",
-    html: html_template,
-    attachments: [
-      {
-        filename: "azguards_price.pdf",
-        content: buffer,
-        contentType: "application/pdf",
-      },
-      {
-        path: "./portfolio.pdf",
-      },
-    ],
-  };
+  // let html_template = `
+  // <div>
+  // Hi ${first_name},
+  // </div>
+  // <p>
+  // Thanks for showing interest in our services. We have recieved your request for
+  // ${data.service_name}
+  // </p>
+  //   <p>
+  //   Based on your selected options the approximate cost of the project will be around
+  //   ${currency} ${totat_cost}
+  // </p>
+  //   <p>
+  //   if you confirm your booking at our stall, you can avail 20% discount.
+  // </p>
+  //  <div>
 
-  transporter.transport.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      throw error;
-    } else {
-      let res = `Email sent: ${info.response}`;
-      return res;
-    }
-  });
+  //  <span>Regards</span></br>
+  //  <span>Team Azguards</span>
+
+  //  </div>
+
+  // `;
+
+  // /*
+  // let objMailchimpParamsToDoctor = {
+  //   templateName: "estimate",
+  //   fromEmail: "order@estimatesback.azguards.com",
+  //   subject: "Your azguards total expenses",
+  //   textContent: html_template,
+  //   arrToEmail: [
+  //     {
+  //       email: userInfo.email,
+  //       type: "to",
+  //     },
+  //   ],
+  //   arrTemplateVars: [
+  //     {
+  //       name: "accessUrl",
+  //       content: `${ACCESS_URL}`,
+  //     },
+  //   ],
+  //   arrAttachments: [
+  //         {
+  //           filename: "azguards_price.pdf",
+  //           content: buffer,
+  //           contentType: "application/pdf",
+  //         },
+  //         {
+  //           path: "./portfolio.pdf",
+  //         },
+  //   ],
+  // };
+  // if (typeof file !== "undefined" && Object.keys(file).length > 0) {
+  //   const data = fs.readFileSync(file.path);
+  //   let base64Data = Buffer.from(data).toString("base64");
+  //   objMailchimpParamsToDoctor.arrAttachments = [
+  //     {
+  //       type: `${file.mimetype}`,
+  //       name: `${file.filename}`,
+  //       content: base64Data,
+  //     },
+  //   ];
+  // }
+  // await transporter.sendEmailFromMandrill(objMailchimpParamsToDoctor);
+
+  // */
+
+  // const mailOptions = {
+  //   from: "prince@azguards.com",
+  //   to: userInfo.email,
+  //   subject: "Your azguards total expenses",
+  //   html: html_template,
+  //   attachments: [
+  //     {
+  //       filename: "azguards_price.pdf",
+  //       content: buffer,
+  //       contentType: "application/pdf",
+  //     },
+  //     {
+  //       path: "./portfolio.pdf",
+  //     },
+  //   ],
+  // };
+
+  // transporter.transport.sendMail(mailOptions, (error, info) => {
+  //   if (error) {
+  //     throw error;
+  //   } else {
+  //     let res = `Email sent: ${info.response}`;
+  //     return res;
+  //   }
+  // });
 }
 
 module.exports = {
