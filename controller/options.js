@@ -1,6 +1,6 @@
 const userService = require("../services/main");
 const NodeCache = require("node-cache");
-const myCache = new NodeCache({ stdTTL: 300 });
+const myCache = new NodeCache({ stdTTL: 86400 });
 
 async function getOptions(req, res, next) {
   try {
