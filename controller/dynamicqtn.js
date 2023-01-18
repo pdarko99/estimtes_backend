@@ -1,4 +1,7 @@
 const userService = require("../services/main");
+const NodeCache = require("node-cache");
+const myCache = new NodeCache({ stdTTL: 300 });
+
 
 async function getQtns(req, res, next) {
   let serviceId = req.params["serviceId"];
@@ -16,7 +19,7 @@ async function getQtns(req, res, next) {
         let option = options.filter((x) => x.question === qtn.id);
         qtn.options = option;
         qtn.sub = true;
-        qtn.main = true
+        qtn.main = true;
         final_questions.push(qtn);
         option.forEach((opt) => {
           if (opt.next_qtn) {
@@ -25,6 +28,8 @@ async function getQtns(req, res, next) {
         });
       }
     });
+
+    myCache.set(`questions/${serviceId}`, final_questions);
 
     res.status(200).json({ response: final_questions });
   } catch (error) {
@@ -39,21 +44,22 @@ function createOptions(allQtns, options, final_questions, opt) {
   sub_qtn.options = sub_option;
   sub_qtn.sub = true;
   sub_qtn.main = false;
-  let last_qtn = final_questions[final_questions.length - 1]
+  let last_qtn = final_questions[final_questions.length - 1];
   if (sub_qtn.id !== last_qtn.id) {
-      final_questions.push(sub_qtn);
-      sub_option.forEach((opt) => {
-        if (opt.next_qtn) {
-          createOptions(allQtns, options, final_questions, opt);
-        }
-      });
+    final_questions.push(sub_qtn);
+    sub_option.forEach((opt) => {
+      if (opt.next_qtn) {
+        createOptions(allQtns, options, final_questions, opt);
+      }
+    });
   }
-
 }
 async function createQtns(req, res, next) {
   let data = { ...req.body };
   try {
+    myCache.flushAll();
     let response = await userService.createQtns(data);
+
     res.status(200).json({ data: "created successfully" });
   } catch (error) {
     console.log(error);
@@ -65,8 +71,11 @@ async function updateQtns(req, res, next) {
   let questionId = req.params["questionId"];
   let data = { ...req.body };
   try {
+    myCache.flushAll();
     let response = await userService.updateQtns(data, questionId);
     console.log(response);
+
+
     res.status(201).json({ data: "updated successfully" });
   } catch (error) {
     console.log(error);
@@ -77,7 +86,9 @@ async function updateQtns(req, res, next) {
 async function deleteQtns(req, res, next) {
   let questionId = req.params["questionId"];
   try {
+    myCache.flushAll();
     await userService.deleteQtns(questionId);
+
     res.status(200).json({ data: "deleted successfully" });
   } catch (error) {
     console.log(error);
@@ -91,5 +102,3 @@ module.exports = {
   createQtns,
   deleteQtns,
 };
-
-

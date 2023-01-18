@@ -1,7 +1,10 @@
 const pool = require("./db").pool;
 const helper = require("./helper");
 const transporter = require("./sendmail");
+const NodeCache = require("node-cache")
+const myCache = new NodeCache({stdTTL:300});
 const fs = require("fs");
+
 
 async function getAllUsers() {
   const conn = await pool.connect();
@@ -41,6 +44,7 @@ async function createServices(data) {
     [data.service, data.description]
   );
   conn.release();
+  myCache.del("services")
 
   return result.rows[0];
 }
@@ -52,7 +56,8 @@ async function getServices() {
     "SELECT id, service, description FROM services ORDER BY created_at ASC"
   );
   conn.release();
-
+  
+  myCache.set("services", result.rows)
   return result.rows;
 }
 
@@ -62,6 +67,8 @@ async function deleteService(serviceId) {
   let res = await connection.query("DELETE FROM services WHERE id = $1", [
     serviceId,
   ]);
+  myCache.del("services")
+
   connection.release();
 }
 
@@ -73,6 +80,8 @@ async function updateService(data, serviceId) {
     [data.service, data.description, serviceId]
   );
   connection.release();
+  myCache.del("services")
+
 
   return update.rows[0];
 }
@@ -98,6 +107,8 @@ async function getQtns(data) {
   );
 
   conn.release();
+
+
 
   return result.rows;
 }
