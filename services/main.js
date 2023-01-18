@@ -2,7 +2,7 @@ const pool = require("./db").pool;
 const helper = require("./helper");
 const transporter = require("./sendmail");
 const NodeCache = require("node-cache")
-const myCache = new NodeCache({stdTTL:300});
+const myCache = new NodeCache({stdTTL:86400});
 const fs = require("fs");
 
 
