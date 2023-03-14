@@ -53,7 +53,7 @@ async function getServices() {
   const conn = await pool.connect();
 
   const result = await conn.query(
-    "SELECT id, service, description FROM services ORDER BY created_at ASC"
+    "SELECT id, service,dynamicInfo, description FROM services ORDER BY created_at ASC"
   );
   conn.release();
   
@@ -76,8 +76,8 @@ async function updateService(data, serviceId) {
   const connection = await pool.connect();
 
   update = await connection.query(
-    "UPDATE services SET service = $1, description = $2 WHERE id = $3",
-    [data.service, data.description, serviceId]
+    "UPDATE services SET service = $1, description = $2, dynamicInfo = $3 WHERE id = $4",
+    [data.service, data.description, data.dynamicInfo, serviceId]
   );
   connection.release();
   myCache.del("services")
@@ -90,8 +90,14 @@ async function createQtns(data) {
   const conn = await pool.connect();
 
   const result = await conn.query(
-    "INSERT INTO questions (question, service) VALUES ($1, $2)",
-    [data.question, data.service]
+    "INSERT INTO questions (question, service, percentage, minimum_value, multiple) VALUES ($1, $2,$3,$4,$5)",
+    [
+      data.question,
+      data.service,
+      data.percentage,
+      data.minimum_value,
+      data.multiple,
+    ]
   );
   conn.release();
 
@@ -102,7 +108,7 @@ async function getQtns(data) {
   const conn = await pool.connect();
 
   const result = await conn.query(
-    "SELECT id, service,question FROM questions WHERE service = $1 ORDER BY created_at ASC",
+    "SELECT id, service,question, percentage, minimum_value, multiple FROM questions WHERE service = $1 ORDER BY created_at ASC",
     [data]
   );
 
@@ -129,8 +135,8 @@ async function updateQtns(data, questionId) {
   const connection = await pool.connect();
 
   update = await connection.query(
-    "UPDATE questions SET question = $1,  service = $2 WHERE id = $3",
-    [data.question, data.service, questionId]
+    "UPDATE questions SET question = $1,  service = $2, percentage = $3, minimum_value = $4, multiple = $5 WHERE id = $6",
+    [data.question, data.service,data.percentage, data.minimum_value, data.multiple, questionId]
   );
 
   connection.release();
