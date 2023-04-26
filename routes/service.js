@@ -4,6 +4,8 @@ let serviceRouter = express.Router();
 const serviceController = require("../controller/services");
 const questionController = require("../controller/dynamicqtn");
 const optionController = require("../controller/options");
+const UserController = require("../services/main");
+
 
 function Router() {
   serviceRouter
@@ -22,6 +24,12 @@ function Router() {
     .post(optionController.createOptions)
     .put(optionController.updateOptions)
     .delete(optionController.deleteOptions);
+  serviceRouter
+    .route("/userInput")
+    
+    .get(UserController.getUserInput)
+    .post(UserController.decodeInput)
+    
 
   return serviceRouter;
 }

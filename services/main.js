@@ -1,10 +1,9 @@
 const pool = require("./db").pool;
 const helper = require("./helper");
 const transporter = require("./sendmail");
-const NodeCache = require("node-cache")
-const myCache = new NodeCache({stdTTL:300});
+const NodeCache = require("node-cache");
+const myCache = new NodeCache({ stdTTL: 300 });
 const fs = require("fs");
-
 
 async function getAllUsers() {
   const conn = await pool.connect();
@@ -44,7 +43,7 @@ async function createServices(data) {
     [data.service, data.description]
   );
   conn.release();
-  myCache.del("services")
+  myCache.del("services");
 
   return result.rows[0];
 }
@@ -56,8 +55,8 @@ async function getServices() {
     "SELECT id, service,dynamicInfo, description FROM services ORDER BY created_at ASC"
   );
   conn.release();
-  
-  myCache.set("services", result.rows)
+
+  myCache.set("services", result.rows);
   return result.rows;
 }
 
@@ -67,7 +66,7 @@ async function deleteService(serviceId) {
   let res = await connection.query("DELETE FROM services WHERE id = $1", [
     serviceId,
   ]);
-  myCache.del("services")
+  myCache.del("services");
 
   connection.release();
 }
@@ -80,8 +79,7 @@ async function updateService(data, serviceId) {
     [data.service, data.description, data.dynamicInfo, serviceId]
   );
   connection.release();
-  myCache.del("services")
-
+  myCache.del("services");
 
   return update.rows[0];
 }
@@ -100,7 +98,7 @@ async function createQtns(data) {
     ]
   );
   conn.release();
-
+    console.log(result.rows[0], 'from woes');
   return result.rows[0];
 }
 
@@ -113,8 +111,6 @@ async function getQtns(data) {
   );
 
   conn.release();
-
-
 
   return result.rows;
 }
@@ -136,7 +132,14 @@ async function updateQtns(data, questionId) {
 
   update = await connection.query(
     "UPDATE questions SET question = $1,  service = $2, percentage = $3, minimum_value = $4, multiple = $5 WHERE id = $6",
-    [data.question, data.service,data.percentage, data.minimum_value, data.multiple, questionId]
+    [
+      data.question,
+      data.service,
+      data.percentage,
+      data.minimum_value,
+      data.multiple,
+      questionId,
+    ]
   );
 
   connection.release();
@@ -160,6 +163,7 @@ async function createOptions(data) {
   );
 
   conn.release();
+  console.log(result)
 
   return result.rows[0];
 }
@@ -203,6 +207,95 @@ async function updateOptions(data, optionId) {
   return update;
 }
 
+function decodeInput(req, res, next) {
+  let display = [];
+  let realInput = req.body;
+  let opt = {
+    option: "",
+    price: ""
+  };
+
+  realInput.forEach(async (x, index) => {
+    let qtn = await helper.getQtns(x.key);
+    console.log(qtn, 'from qtn')
+    if (x.value.length > 36) {
+      let [ val1, val2 ] = x.value.split(",");
+      console.log(val1, val2, 'from val1 val2');
+      let optt = await helper.getOptions(val1);
+      let opt1 = await helper.getOptions(val2);
+      console.log(optt, 'from opttt')
+      opt.option = optt.option + "," + opt1.option
+      opt.price = +optt.price + +opt1.price;
+    } else if (x.value.length < 36) {
+       if ((qtn.percentage / 100) * (+x.value) > qtn.minimum_value) {
+         opt.price = (qtn.percentage / 100) * (+x.value);
+       } else {
+         opt.price = +qtn.minimum_value;
+       }
+      opt.option = x.value
+      
+    } else {
+      
+      let opts = await helper.getOptions(x.value);
+      opt.option = opts.option;
+      opt.price = opts.price;
+     
+    }
+    display.push({
+      question: qtn.question,
+      option: opt.option,
+      price: opt.price,
+    });
+
+    if (display.length === realInput.length) {
+      console.log(display, 'from display')
+      res.status(201).json({ response: display });
+    }
+  });
+
+
+}
+
+async function getUserInput(req, res, next) {
+  let newrow = [];
+  const conn = await pool.connect();
+
+  const result = await conn.query("SELECT * FROM userinput");
+  // console.log(result.rows)
+
+  conn.release();
+  let row = result.rows;
+  try {
+    row.forEach(async (x, index) => {
+      if (x.userid && x.inputs) {
+        let userInfo = await helper.getUser(x.userid);
+        console.log(userInfo, 'from user ifnO')
+        newrow.push({
+          name: userInfo.name,
+          email: userInfo.email,
+          number: userInfo.number,
+          industry: userInfo.industry,
+          business_name: userInfo.business_name,
+          service: userInfo.service,
+          date: userInfo.created_at,
+          realInput: Object.entries(x.inputs).map(([key, value]) => ({
+            key,
+            value,
+          })),
+        });
+
+    
+      }
+
+      if (index === row.length - 1) {
+        res.status(201).json({ response: newrow });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function storeUserInput(data) {
   const conn = await pool.connect();
 
@@ -212,7 +305,7 @@ async function storeUserInput(data) {
     "INSERT INTO userinput (userId, inputs) VALUES ($1, $2)",
     [data.userId, data.inputs]
   );
-  console.log(data);
+  console.log(result, 'from results');
   // return result.rows[0];
   let email_template = `
   <div>
@@ -415,6 +508,8 @@ module.exports = {
   deleteOptions,
   updateOptions,
   storeUserInput,
+  getUserInput,
+  decodeInput,
 };
 
 // "d37c78a6-8a42-4134-a5b1-03fd1234556d"  id for users

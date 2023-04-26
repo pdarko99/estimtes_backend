@@ -4,7 +4,7 @@ async function getQtns(data) {
   const conn = await pool.connect();
 
   const result = await conn.query(
-    "SELECT question FROM questions WHERE id = $1",
+    "SELECT question, percentage, minimum_value FROM questions WHERE id = $1",
     [data]
   );
   conn.release();
@@ -27,7 +27,7 @@ async function getUser(data) {
   const conn = await pool.connect();
 
   const result = await conn.query(
-    "SELECT name, email FROM userInfo WHERE id = $1",
+    "SELECT userInfo.name, userInfo.email, userInfo.number, userInfo.business_name, userInfo.industry, userInfo.created_at, services.service FROM userInfo JOIN services on userInfo.service = services.id WHERE userInfo.id = $1 ORDER BY userInfo.created_at ASC;",
     [data]
   );
   conn.release();
