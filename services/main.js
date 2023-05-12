@@ -39,8 +39,8 @@ async function createServices(data) {
   const conn = await pool.connect();
 
   const result = await conn.query(
-    "INSERT INTO services (service, description) VALUES ($1,$2)",
-    [data.service, data.description]
+    "INSERT INTO services (service, description, dynamicInfo) VALUES ($1,$2,$3)",
+    [data.service, data.description, data.dynamicinfo]
   );
   conn.release();
   myCache.del("services");
@@ -76,7 +76,7 @@ async function updateService(data, serviceId) {
 
   update = await connection.query(
     "UPDATE services SET service = $1, description = $2, dynamicInfo = $3 WHERE id = $4",
-    [data.service, data.description, data.dynamicInfo, serviceId]
+    [data.service, data.description, data.dynamicinfo, serviceId]
   );
   connection.release();
   myCache.del("services");
